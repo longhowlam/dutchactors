@@ -31,8 +31,16 @@ jaar = NL_Films %>% group_by(startYear) %>% summarise(n=n())
 NL_film_crew = NL_Films %>% left_join(IMDB_principals, by = c("titleId" = "tconst" ))
 NL_film_crew = NL_film_crew %>%  left_join(IMDB_names, by = c("nconst"="nconst"))
 
+
+#### haal per persoon zijn category uit de data ###########################
+
+persoonCategory = NL_film_crew %>% group_by(primaryName) %>%  summarise(group = max(category))
+
+persoonCategory %>% group_by(group) %>% summarise(n=n())
+
 #### link spelers (acteurs) als ze in dezelfde film hebben gespeeld 
 #### tel hoe vaak dat voorkomt. Dit zijn de edges
+
 NL_film_crew_links = NL_film_crew %>%
   select(titleId, primaryName) %>%
   full_join(
@@ -58,6 +66,8 @@ NL_film_crew_links = NL_film_crew %>%
 edges = NL_film_crew_links %>% filter(value > 1)
 nodes = data.frame(id = unique(c(edges$from, edges$to)))
 nodes = nodes %>% mutate(label = id, title = id)
+nodes = nodes %>% left_join(persoonCategory, by = c("id"= "primaryName"))
+nodes$value = 1
 
 visNetwork(nodes, edges ) %>%  
   visIgraphLayout(layout = "layout_with_graphopt")  %>% 
@@ -66,7 +76,8 @@ visNetwork(nodes, edges ) %>%
     solver = "forceAtlas2Based", 
     forceAtlas2Based = list(gravitationalConstant = -500)
   ) %>% 
-  visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T))
+  visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T)) %>% 
+  visLegend()
 
 visNetwork(nodes, edges ) %>% 
   visPhysics(
@@ -77,6 +88,16 @@ visNetwork(nodes, edges ) %>%
 
 ####### centrality ############################################################
 
-
-
+actors.GRP = graph_from_data_frame(edges)
+plot(actors.GRP)
 ######## community detection #################################################
+
+
+ceb <- cluster_edge_betweenness(actors.GRP) 
+dendPlot(ceb, mode="hclust")
+plot(
+  ceb,
+  actors.GRP,
+  vertex.label.cex=0.1, vertex.size=1, edge.arrow.size=.01 ,
+  edge.width	=0.1, edge.arrow.width	 =0.1,
+  layout = layout_with_graphopt) 
