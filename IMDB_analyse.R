@@ -74,3 +74,9 @@ visNetwork(nodes, edges ) %>%
     forceAtlas2Based = list(gravitationalConstant = -500)
   ) %>% 
   visEdges(smooth = FALSE)
+
+####### centrality ############################################################
+
+
+
+######## community detection #################################################
