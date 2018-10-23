@@ -79,17 +79,41 @@ visNetwork(nodes, edges ) %>%
   visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T)) %>% 
   visLegend()
 
-visNetwork(nodes, edges ) %>% 
-  visPhysics(
-    solver = "forceAtlas2Based", 
-    forceAtlas2Based = list(gravitationalConstant = -500)
-  ) %>% 
-  visEdges(smooth = FALSE)
 
-####### centrality ############################################################
+####### Degree & centrality ############################################################
 
+## maak eerst een igraph aan
 actors.GRP = graph_from_data_frame(edges)
-plot(actors.GRP)
+plot(
+  actors.GRP,
+  vertex.label.cex=0.1, vertex.size=1, edge.arrow.size=.01 ,
+  edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
+  edge.label.cex = 0.1,	
+  layout = layout_with_graphopt
+) 
+
+deg <- degree(actors.GRP, mode="all")
+hist(deg)
+plot(
+  actors.GRP, 
+  vertex.size=sqrt(deg),
+  vertex.label.cex=0.1,  edge.arrow.size=.01 ,
+  edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
+  edge.label.cex = 0.1,
+  layout = layout_with_graphopt
+)
+
+betw = closeness(actors.GRP)
+hist(betw)
+plot(
+  actors.GRP, 
+  vertex.size=betw,
+  vertex.label.cex=0.1,  edge.arrow.size=.01 ,
+  edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
+  edge.label.cex = 0.1,
+  layout = layout_with_graphopt
+)
+
 ######## community detection #################################################
 
 
@@ -99,5 +123,7 @@ plot(
   ceb,
   actors.GRP,
   vertex.label.cex=0.1, vertex.size=1, edge.arrow.size=.01 ,
-  edge.width	=0.1, edge.arrow.width	 =0.1,
-  layout = layout_with_graphopt) 
+  edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
+  edge.label.cex = 0.1,
+  layout = layout_with_graphopt
+)
