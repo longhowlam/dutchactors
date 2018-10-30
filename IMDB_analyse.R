@@ -2,6 +2,7 @@ library(readr)
 library(dplyr)
 library(visNetwork)
 library(igraph)
+library(wordcloud)
 
 ######### import data vanuit IMDB datasets ##########################################################
 IMDB_basics <- read_delim("IMDB_basics.tsv", "\t", escape_double = FALSE, trim_ws = TRUE)
@@ -69,7 +70,7 @@ nodes = nodes %>% mutate(label = id, title = id)
 nodes = nodes %>% left_join(persoonCategory, by = c("id"= "primaryName"))
 nodes$value = 1
 
-visNetwork(nodes, edges ) %>%  
+visNetwork(nodes, edges , height = "900px", width = "1200px") %>%  
   visIgraphLayout(layout = "layout_with_graphopt")  %>% 
   visEdges(smooth = FALSE) %>% 
   visPhysics(
@@ -94,6 +95,12 @@ plot(
 
 deg <- degree(actors.GRP, mode="all")
 hist(deg)
+
+degreeDF = data.frame(persoon = names(deg), centrality = deg)
+row.names(degreeDF) = NULL
+degreeDF = degreeDF %>% arrange( desc(centrality))
+
+
 plot(
   actors.GRP, 
   vertex.size=sqrt(deg),
@@ -118,7 +125,15 @@ plot(
 
 
 ceb <- cluster_edge_betweenness(actors.GRP) 
-dendPlot(ceb, mode="hclust")
+
+tmp = membership(ceb) 
+NLFILM_communities =  data.frame(
+  persoon = names(tmp), 
+  community = as.numeric(tmp))
+
+COMM_STATS = NLFILM_communities %>%  group_by(community) %>%  summarise(n=n())
+
+dendPlot(ceb, mode ="hclust", use.edge.length = TRUE, cex = 0.1, horiz=TRUE)
 plot(
   ceb,
   actors.GRP,
@@ -127,3 +142,13 @@ plot(
   edge.label.cex = 0.1,
   layout = layout_with_graphopt
 )
+
+
+####### wordcloud degree voor een community ####################
+i = 6
+groep_i = NLFILM_communities %>% filter(community == i) %>% left_join(degreeDF)
+pal <- brewer.pal(9,"BuGn")
+pal <- pal[-(1:4)]
+wordcloud(groep6$persoon, groep6$centrality, colors=pal)
+
+
