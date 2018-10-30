@@ -94,6 +94,7 @@ plot(
 ) 
 
 deg <- degree(actors.GRP, mode="all")
+deg = betweenness(actors.GRP,directed = FALSE)
 hist(deg)
 
 degreeDF = data.frame(persoon = names(deg), centrality = deg)
@@ -103,7 +104,7 @@ degreeDF = degreeDF %>% arrange( desc(centrality))
 
 plot(
   actors.GRP, 
-  vertex.size=sqrt(deg),
+  vertex.size = sqrt(deg),
   vertex.label.cex=0.1,  edge.arrow.size=.01 ,
   edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
   edge.label.cex = 0.1,
@@ -114,7 +115,7 @@ betw = closeness(actors.GRP)
 hist(betw)
 plot(
   actors.GRP, 
-  vertex.size=betw,
+  vertex.size=2000000*betw,
   vertex.label.cex=0.1,  edge.arrow.size=.01 ,
   edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
   edge.label.cex = 0.1,
@@ -151,4 +152,37 @@ pal <- brewer.pal(9,"BuGn")
 pal <- pal[-(1:4)]
 wordcloud(groep6$persoon, groep6$centrality, colors=pal)
 
+##############################################################################
+#### simpel graph ###################
 
+edg = data.frame(
+  from = c(1,1,2,3,4,5,6,8,9,10,11) ,
+    to = c(12,5,5,5,5,6,7,7,7,7,7)
+)
+graphje = graph_from_data_frame(edg)
+plot(graphje)
+
+
+dg <- degree(graphje, mode="all")
+cls = closeness(graphje, mode="all")
+betw =betweenness(graphje, directed = FALSE)
+ec = eigen_centrality(graphje)
+
+
+ceb2 <- cluster_edge_betweenness(graphje) 
+
+tmp = membership(ceb2) 
+tmp2 =  data.frame(
+  persoon = names(tmp), 
+  community = as.numeric(tmp))
+
+
+dendPlot(ceb2, mode ="hclust", use.edge.length = TRUE, cex = 0.1, horiz=TRUE)
+plot(
+  ceb2,
+  graphje,
+  vertex.label.cex=0.1, vertex.size=1, edge.arrow.size=.01 ,
+  edge.width	=0.1, edge.arrow.width	 =0.1, edge.color	= "Black",
+  edge.label.cex = 0.1,
+  layout = layout_with_graphopt
+)
