@@ -70,15 +70,20 @@ nodes = nodes %>% mutate(label = id, title = id)
 nodes = nodes %>% left_join(persoonCategory, by = c("id"= "primaryName"))
 nodes$value = 1
 
-visNetwork(nodes, edges , height = "900px", width = "1200px") %>%  
+visNetwork(nodes, edges , height = "1000px", width = "1600px") %>%  
   visIgraphLayout(layout = "layout_with_graphopt")  %>% 
   visEdges(smooth = FALSE) %>% 
   visPhysics(
     solver = "forceAtlas2Based", 
     forceAtlas2Based = list(gravitationalConstant = -500)
   ) %>% 
-  visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T)) %>% 
-  visLegend()
+  visOptions(
+    nodesIdSelection = TRUE,
+    selectedBy = "group", 
+    highlightNearest = list(enabled = T, degree = 2, hover = T)
+  ) %>% 
+  visLegend() %>% 
+  visInteraction(navigationButtons = TRUE)
 
 
 ####### Degree & centrality ############################################################
