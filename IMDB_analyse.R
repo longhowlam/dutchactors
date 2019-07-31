@@ -4,7 +4,9 @@ library(visNetwork)
 library(igraph)
 library(wordcloud)
 
-######### import data vanuit IMDB datasets ##########################################################
+######### Import data  #######################################################################
+## vanuit IMDB datasets
+
 IMDB_basics <- read_delim("IMDB_basics.tsv", "\t", escape_double = FALSE, trim_ws = TRUE)
 IMDB_akas <- read_delim("IMDB_akas.tsv", "\t", escape_double = FALSE, trim_ws = TRUE) %>%
   group_by(titleId) %>%
@@ -14,8 +16,9 @@ IMDB_akas <- read_delim("IMDB_akas.tsv", "\t", escape_double = FALSE, trim_ws = 
 IMDB_principals <- read_delim("IMDB_principals.tsv","\t", escape_double = FALSE, trim_ws = TRUE)
 IMDB_names <- read_delim("IMDB_names.tsv","\t", escape_double = FALSE, trim_ws = TRUE)
 
+#### Filter data #########################################################################
+#### Bekijk alleen de Nederlandse films van de laatste 25 jaar 
 
-#### Bekijk alleen de films van de laatste 25 jaar ###########################
 NL_Films = IMDB_akas %>% 
   filter(
     region == "NL"
@@ -28,13 +31,14 @@ NL_Films = IMDB_akas %>%
 
 jaar = NL_Films %>% group_by(startYear) %>% summarise(n=n())
 
+#### Prepareer netwerk data #########################################################################
+
 #### join zodat we per film de namen hebben van de acteurs
 NL_film_crew = NL_Films %>% left_join(IMDB_principals, by = c("titleId" = "tconst" ))
 NL_film_crew = NL_film_crew %>%  left_join(IMDB_names, by = c("nconst"="nconst"))
-
+NL_film_crew
 
 #### haal per persoon zijn category uit de data ###########################
-
 persoonCategory = NL_film_crew %>% group_by(primaryName) %>%  summarise(group = max(category))
 
 persoonCategory %>% group_by(group) %>% summarise(n=n())
@@ -69,6 +73,8 @@ nodes = data.frame(id = unique(c(edges$from, edges$to)))
 nodes = nodes %>% mutate(label = id, title = id)
 nodes = nodes %>% left_join(persoonCategory, by = c("id"= "primaryName"))
 nodes$value = 1
+
+#### Visualiseer graph data ################################################################
 
 visNetwork(nodes, edges , height = "1000px", width = "1600px") %>%  
   visIgraphLayout(layout = "layout_with_graphopt")  %>% 
@@ -157,8 +163,11 @@ pal <- brewer.pal(9,"BuGn")
 pal <- pal[-(1:4)]
 wordcloud(groep6$persoon, groep6$centrality, colors=pal)
 
-##############################################################################
-#### simpel graph ###################
+
+
+
+#### simple test graph ##########################################################################
+## scratch code.........
 
 edg = data.frame(
   from = c(1,1,2,3,4,5,6,8,9,10,11) ,
